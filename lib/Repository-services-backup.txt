@@ -1,0 +1,5 @@
+http://www.webservice.com/globalweather.asmx?wsdl%GetWeather
+http://www.webservices.com/weatherService.asmx?wsdl%getLocalWeather
+http://www.seekda.com/GlobalWeather.asmx?wsdl%getWeatherData
+http://www.programableweb.com/WeatherNow.asmx?wsdl%getCityWeather
+http://www.webservicex.com/globalweather.asmx?wsdl%GetWeather
