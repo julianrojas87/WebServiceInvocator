@@ -53,8 +53,8 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 	private NullActivityContextInterfaceFactory nullACIFactory;
 	private NullActivityFactory nullActivityFactory;
 	
-	private static final String dynamicWebServiceIP = "http://190.90.112.7:8084/";
-	//private static final String dynamicWebServiceIP = "http://192.168.190.55:8084/";
+	//private static final String dynamicWebServiceIP = "http://190.90.112.7:8084/";
+	private static final String dynamicWebServiceIP = "http://192.168.190.55:8084/";
 	private static final String dynamicWebServicePath = "dynamics-web-service/Axis2Servlet?";
 
 	@SuppressWarnings("rawtypes")
