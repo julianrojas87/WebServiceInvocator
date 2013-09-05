@@ -1,16 +1,17 @@
 package org.telcomp.sbb;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.slee.ActivityContextInterface;
 import javax.slee.Address;
 import javax.slee.RolledBackContext;
@@ -54,11 +55,20 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 	private NullActivityFactory nullActivityFactory;
 	
 	//private static final String dynamicWebServiceIP = "http://190.90.112.7:8084/";
-	private static final String dynamicWebServiceIP = "http://192.168.190.55:8084/";
+	//private static final String dynamicWebServiceIP = "http://192.168.190.55:8084/";
+	private static String dynamicWebServiceIP;
 	private static final String dynamicWebServicePath = "dynamics-web-service/Axis2Servlet?";
 
 	@SuppressWarnings("rawtypes")
 	public void onStartWSInvocatorEvent(StartWSInvocatorEvent event, ActivityContextInterface aci) {
+		Properties prop = new Properties();
+        try {
+			prop.load(new FileInputStream("/usr/local/Mobicents-JSLEE/telcoServices.properties"));
+			dynamicWebServiceIP = prop.getProperty("DYNAMIC_WEB_SERVICE_INVOCATOR_IP");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
 		this.setActivityFlow(aci);
 		String serviceWSDL = event.getServiceWSDL();
 		String operationName = event.getOperationName();
@@ -275,7 +285,7 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 			timerFacility = (TimerFacility) ctx.lookup("slee/facilities/timer");
             nullACIFactory = (NullActivityContextInterfaceFactory)ctx.lookup("slee/nullactivity/activitycontextinterfacefactory");
             nullActivityFactory = (NullActivityFactory)ctx.lookup("slee/nullactivity/factory");
-		} catch (NamingException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
