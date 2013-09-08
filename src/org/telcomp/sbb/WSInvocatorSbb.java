@@ -54,8 +54,6 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 	private NullActivityContextInterfaceFactory nullACIFactory;
 	private NullActivityFactory nullActivityFactory;
 	
-	//private static final String dynamicWebServiceIP = "http://190.90.112.7:8084/";
-	//private static final String dynamicWebServiceIP = "http://192.168.190.55:8084/";
 	private static String dynamicWebServiceIP;
 	private static final String dynamicWebServicePath = "dynamics-web-service/Axis2Servlet?";
 
@@ -127,28 +125,6 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 			this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 			aci.detach(this.sbbContext.getSbbLocalObject());
 			this.getActivityFlow().detach(this.sbbContext.getSbbLocalObject());
-			//boolean flag = false;
-			//int i = 0;
-			//String newOpName = "";
-			/*try {
-				Path filePath = Paths.get("/home/julian/JSLEE-Workspace/WebServiceInvocator/lib/Repository-services-backup.txt");
-				List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-				while(!flag){
-					if(lines.get(i).indexOf(this.getCurrentWsdl()) >= 0){
-						this.setCurrentWsdl(lines.get(i+1).substring(0, lines.get(i+1).indexOf("%")));
-						newOpName = lines.get(i+1).substring(lines.get(i+1).indexOf("%")+1);
-						flag = true;
-					} else{
-						i++;
-					}
-				}
-				
-				startWSInvocatorEvent startWS = new startWSInvocatorEvent(this.getCurrentWsdl(), newOpName, this.getServiceInputs(), null);
-				this.fireStartWSInvocatorEvent(startWS, this.getActivityFlow(), null);
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}*/
 		}
 	}
 
@@ -160,13 +136,11 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 				System.out.println("200 OK Response received!!");
 				try {
 					String responseBody = EntityUtils.toString(response.getEntity());
-					//System.out.println(responseBody);
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder db = dbf.newDocumentBuilder();
 					Document doc = db.parse(new InputSource(new ByteArrayInputStream(responseBody.getBytes("utf-8"))));
 					doc.getDocumentElement().normalize();
 					HashMap<String, List<String>> operationOutputs = this.getXMLData(doc);
-					//System.out.println(operationOutputs);
 					EndWSInvocatorEvent endEvent = new EndWSInvocatorEvent(operationOutputs, this.getOperationName(), true);
 					this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 					aci.detach(this.sbbContext.getSbbLocalObject());
@@ -189,32 +163,6 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 				this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 				aci.detach(this.sbbContext.getSbbLocalObject());
 				this.getActivityFlow().detach(this.sbbContext.getSbbLocalObject());
-				
-				
-				
-				/*boolean flag = false;
-				int i = 0;
-				String newOpName = "";
-				
-				try {
-					Path filePath = Paths.get("/home/julian/JSLEE-Workspace/WebServiceInvocator/lib/Repository-services-backup.txt");
-					List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-					while(!flag){
-						if(lines.get(i).indexOf(this.getCurrentWsdl()) >= 0){
-							this.setCurrentWsdl(lines.get(i+1).substring(0, lines.get(i+1).indexOf("%")));
-							newOpName = lines.get(i+1).substring(lines.get(i+1).indexOf("%")+1);
-							flag = true;
-						} else{
-							i++;
-						}
-					}
-					
-					startWSInvocatorEvent startWS = new startWSInvocatorEvent(this.getCurrentWsdl(), newOpName, this.getServiceInputs(), null);
-					this.fireStartWSInvocatorEvent(startWS, this.getActivityFlow(), null);
-					
-				} catch (IOException e) {
-					e.printStackTrace();
-				}*/
 			}
 		} else{
 			System.out.println("No Response received from Repository App!!!!");
