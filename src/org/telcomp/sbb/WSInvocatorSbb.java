@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -57,8 +58,13 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 	private static String dynamicWebServiceIP;
 	private static final String dynamicWebServicePath = "dynamics-web-service/Axis2Servlet?";
 
-	@SuppressWarnings("rawtypes")
 	public void onStartWSInvocatorEvent(StartWSInvocatorEvent event, ActivityContextInterface aci) {
+		System.out.println("*******************************************");
+		System.out.println("WebServiceInvocator Invoked");
+		System.out.println("Input ServiceWSDL = "+event.getServiceWSDL());
+		System.out.println("Input OperationName = "+event.getOperationName());
+		
+		
 		Properties prop = new Properties();
         try {
 			prop.load(new FileInputStream("/usr/local/Mobicents-JSLEE/telcoServices.properties"));
@@ -74,10 +80,11 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 		HashMap<String, String> operationInputs = event.getOperationInputs();
 		this.setServiceInputs(operationInputs);
 		String inputs = "&";
-		Iterator it = operationInputs.entrySet().iterator();
+		Iterator<Entry<String, String>> it = operationInputs.entrySet().iterator();
 		
 		while(it.hasNext()){
-			Map.Entry e = (Map.Entry)it.next();
+			Map.Entry<String, String> e = (Map.Entry<String, String>) it.next();
+			System.out.println("Input OperationInput "+e.getKey()+" = "+e.getValue());
 			inputs = inputs.concat(e.getKey() + "=" + e.getValue() + "&");
 		}
 		
@@ -88,11 +95,6 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 		String inputs2 = inputs1.replace("\u00A0", "");
 		String inputs3 = inputs2.replaceAll("\\r\\n|\\n|\\r", "%20");
 		
-		
-		System.out.println("CURRENT WSDL: "+serviceWSDL);
-		System.out.println("OPERATION NAME: "+operationName);
-		System.out.println("PARAMETERS: "+inputs);
-		
 		HttpGet getRequest = new HttpGet(dynamicWebServiceIP+dynamicWebServicePath+"service="+serviceWSDL
 				+"&operation="+operationName+inputs3);
 		
@@ -102,7 +104,6 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 			clientAci.attach(sbbContext.getSbbLocalObject());
 			clientActivity.execute(getRequest, dynamicWebServiceIP+dynamicWebServicePath+"service="+serviceWSDL
 					+"&operation="+operationName+inputs2);
-			System.out.println("INVOKING WEB SERVICE...");
 			NullActivity timerBus = this.nullActivityFactory.createNullActivity();
 			ActivityContextInterface timerBusACI;
 			timerBusACI = this.nullACIFactory.getActivityContextInterface(timerBus);
@@ -119,12 +120,14 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 		aci.detach(sbbContext.getSbbLocalObject());
 		if(!this.getAnsweredRequest()){
 			System.out.println("Request Timeout!!");
-			System.out.println("***************************************************");
-			
 			EndWSInvocatorEvent endEvent = new EndWSInvocatorEvent(null, this.getOperationName(), false);
 			this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 			aci.detach(this.sbbContext.getSbbLocalObject());
 			this.getActivityFlow().detach(this.sbbContext.getSbbLocalObject());
+			System.out.println("Output OperationOutputs = null");
+			System.out.println("Output OperationName = "+this.getOperationName());
+			System.out.println("Output Success = false");
+			System.out.println("*******************************************");
 		}
 	}
 
@@ -133,8 +136,8 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 		HttpResponse response = event.getHttpResponse();
 		if(response != null){
 			if(response.getStatusLine().getStatusCode() == 200){
-				System.out.println("200 OK Response received!!");
 				try {
+					System.out.println("200 OK Response received");
 					String responseBody = EntityUtils.toString(response.getEntity());
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder db = dbf.newDocumentBuilder();
@@ -145,6 +148,20 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 					this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 					aci.detach(this.sbbContext.getSbbLocalObject());
 					this.getActivityFlow().detach(this.sbbContext.getSbbLocalObject());
+					System.out.println("Output OperationName = "+this.getOperationName());
+					Iterator<Entry<String, List<String>>> it = operationOutputs.entrySet().iterator();
+					while(it.hasNext()){
+						Map.Entry<String, List<String>> e = (Map.Entry<String, List<String>>) it.next();
+						if(e.getValue().size() > 1){
+							for(String s : e.getValue()){
+								System.out.println("Output OperationOutput "+e.getKey()+" = "+s);
+							}
+						} else{
+							System.out.println("Output OperationOutput "+e.getKey()+" = "+e.getValue().get(0));
+						}
+					}
+					System.out.println("Output Success = true");
+					System.out.println("*******************************************");
 				} catch (ParseException e) {
 					e.printStackTrace();
 				} catch (IOException e) {		
@@ -155,23 +172,28 @@ public abstract class WSInvocatorSbb implements javax.slee.Sbb {
 					e.printStackTrace();
 				}
 			} else if(response.getStatusLine().getStatusCode() == 500){	
-				System.out.println("Gateway Error!!!");
-				System.out.println("***************************************************");
+				System.out.println("Gateway Error");
 				this.setAnsweredRequest(true);
-				
 				EndWSInvocatorEvent endEvent = new EndWSInvocatorEvent(null, this.getOperationName(), false);
 				this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 				aci.detach(this.sbbContext.getSbbLocalObject());
 				this.getActivityFlow().detach(this.sbbContext.getSbbLocalObject());
+				System.out.println("Output OperationOutputs = null");
+				System.out.println("Output OperationName = "+this.getOperationName());
+				System.out.println("Output Success = false");
+				System.out.println("*******************************************");
 			}
 		} else{
 			System.out.println("No Response received from Repository App!!!!");
-			
 			this.setAnsweredRequest(true);
 			EndWSInvocatorEvent endEvent = new EndWSInvocatorEvent(null, this.getOperationName(), false);
 			this.fireEndWSInvocatorEvent(endEvent, this.getActivityFlow(), null);
 			aci.detach(this.sbbContext.getSbbLocalObject());
 			this.getActivityFlow().detach(this.sbbContext.getSbbLocalObject());
+			System.out.println("Output OperationOutputs = null");
+			System.out.println("Output OperationName = "+this.getOperationName());
+			System.out.println("Output Success = false");
+			System.out.println("*******************************************");
 		}
 	}
 	
